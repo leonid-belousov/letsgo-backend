@@ -1,0 +1,1892 @@
+// Let'sGo — Prisma schema (single owner: lead architect).
+// Conventions: UUIDv7 ids, timestamptz(3) UTC, money = integer minor units + currency,
+// `version` on editable resources (optimistic concurrency). Invariants Prisma cannot
+// express (exclusion constraints, immutability triggers, partial uniques, case checks)
+// live in prisma/migrations/*_invariants/migration.sql.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AuthProvider {
+  EMAIL
+  PHONE
+  GOOGLE
+  APPLE
+}
+
+enum Audience {
+  EVERYONE
+  FOLLOWERS
+  ONLY_ME
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MessagePolicy {
+  EVERYONE
+  FOLLOWING
+  NOBODY
+}
+
+enum InvitationPolicy {
+  EVERYONE
+  FOLLOWING
+  CLUB_MEMBERS
+  NOBODY
+}
+
+enum MentionPolicy {
+  EVERYONE
+  FOLLOWING
+  NOBODY
+}
+
+enum FollowTargetType {
+  USER
+  CLUB
+  VENUE
+  PITCH
+  TOURNAMENT
+}
+
+enum FollowStatus {
+  REQUESTED
+  ACCEPTED
+}
+
+enum FavouriteTargetType {
+  USER
+  CLUB
+  EVENT
+  VENUE
+  PITCH
+  TOURNAMENT
+}
+
+enum GrantResourceType {
+  PLATFORM
+  CLUB
+  EVENT
+  VENUE
+  PITCH
+  TOURNAMENT
+}
+
+enum ClubVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ClubJoinMode {
+  OPEN
+  APPROVE_REQUESTS
+  INVITE_ONLY
+}
+
+enum ClubStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MembershipStatus {
+  MEMBER
+  REQUESTED
+  INVITED
+  LEFT
+  REMOVED
+  DECLINED
+}
+
+enum TransferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum VenueKind {
+  PAID
+  COMMUNITY
+}
+
+enum VenueStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum PitchSurface {
+  ARTIFICIAL
+  NATURAL
+  HARD_COURT
+  OTHER
+}
+
+enum PitchSetting {
+  INDOOR
+  OUTDOOR
+  COVERED
+}
+
+enum BookingSource {
+  LETSGO
+  EXTERNAL
+}
+
+enum BookingStatus {
+  REQUESTED
+  HELD
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum ConfirmationSource {
+  VENUE
+  SYSTEM
+  ORGANISER_MANUAL
+}
+
+enum VenueRequestStatus {
+  PENDING
+  NEEDS_INFO
+  APPROVED
+  DECLINED
+}
+
+enum EventKind {
+  CASUAL
+  CLUB_V_CLUB
+  TRAINING
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  STARTED
+  FINISHED
+  RESULT_PENDING
+  RESULT_CONFIRMED
+  CANCELLED
+}
+
+enum EventJoinMode {
+  AUTO_ACCEPT
+  APPROVE_REQUESTS
+}
+
+enum AgeBand {
+  NONE
+  A35
+  A40
+  A45
+  A50
+}
+
+enum PitchStatus {
+  PITCH_BOOKED
+  BOOKING_PENDING
+  COMMUNITY_PITCH
+}
+
+enum ParticipationStatus {
+  PENDING_APPROVAL
+  CONFIRMED
+  WAITLISTED
+  DECLINED
+  WITHDRAWN
+  CANCELLED
+  REMOVED
+}
+
+enum ParticipationSource {
+  SELF_JOIN
+  INVITATION
+  WAITLIST_OFFER
+  ORGANISER_ADDED
+  AGE_EXCEPTION
+}
+
+enum InvitationStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
+enum SeatHoldReleaseReason {
+  CONFIRMED
+  DECLINED
+  EXPIRED
+  REVOKED
+  EVENT_CANCELLED
+}
+
+enum WaitlistOfferStatus {
+  OFFERED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum MatchStatus {
+  DRAFT
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  CANCELLED
+}
+
+enum MatchEventType {
+  GOAL
+  OWN_GOAL
+  YELLOW_CARD
+  RED_CARD
+}
+
+enum ObligationKind {
+  EVENT_FEE
+  TOURNAMENT_CLUB_FEE
+  TOURNAMENT_PLAYER_FEE
+  PITCH_RENTAL
+}
+
+enum ObligationStatus {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+enum AdjustmentType {
+  CORRECTION
+  REFUND_DUE
+  REFUND_PAID
+  WAIVER
+}
+
+enum TournamentDuration {
+  ONE_DAY
+  MULTI_DAY
+  SEASON
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum FeeMode {
+  FREE
+  PER_CLUB
+  PER_PLAYER
+}
+
+enum EntryStatus {
+  APPLIED
+  INVITED
+  ACCEPTED
+  WAITLISTED
+  REJECTED
+  DECLINED
+  WITHDRAWN
+}
+
+enum EntryPlayerStatus {
+  INVITED
+  CONFIRMED
+  DECLINED
+  REMOVED
+}
+
+enum StageKind {
+  GROUP
+  LEAGUE
+  KNOCKOUT
+  CUSTOM
+}
+
+enum FixtureStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum DocumentAudience {
+  CLUB_REPS
+  PLAYERS
+  BOTH
+}
+
+enum ConsentRole {
+  CLUB_REP
+  PLAYER
+}
+
+enum MediaKind {
+  PHOTO
+  VIDEO
+  DOCUMENT
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum MediaVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum PostAuthorType {
+  USER
+  CLUB
+  TOURNAMENT
+  VENUE
+}
+
+enum PostAudience {
+  PUBLIC
+  FOLLOWERS
+  CLUB_MEMBERS
+  ONLY_ME
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  DELETED
+}
+
+enum MentionTargetType {
+  USER
+  CLUB
+}
+
+enum MentionStatus {
+  PENDING_REVIEW
+  SHOWN
+  HIDDEN
+  REMOVED
+}
+
+enum ConversationKind {
+  DIRECT
+  EVENT
+  CLUB
+  TOURNAMENT
+  SYSTEM
+}
+
+enum MessageKind {
+  TEXT
+  SYSTEM_CARD
+}
+
+enum NotificationDelivery {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum RatingSubject {
+  PLAYER
+  ORGANISER
+  REFEREE
+  PITCH
+  VENUE
+}
+
+enum AchievementType {
+  NEW_JOINER
+  FAIR_PLAY
+  LEADERSHIP
+  TROPHY
+  CLUB_AWARD
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE
+  IMPERSONATION
+  OTHER
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  USER
+  CLUB
+  EVENT
+  TOURNAMENT
+  VENUE
+  MESSAGE
+  MEDIA
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum RecoveryStatus {
+  OPEN
+  APPROVED
+  DECLINED
+  REDEEMED
+  EXPIRED
+}
+
+// ───────────────────────── Identity ─────────────────────────
+
+model User {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime?  @db.Timestamptz(3)
+
+  profile        Profile?
+  privacy        PrivacyPolicy?
+  identities     AuthIdentity[]
+  sessions       Session[]
+  notifPrefs     NotificationPreference[]
+  grantsReceived RoleGrant[]              @relation("GrantGrantee")
+
+  @@index([status])
+}
+
+model Profile {
+  userId      String            @id @db.Uuid
+  nickname    String?
+  // Lowercase, unique across people. CHECK (username = lower(username)) in invariants migration.
+  username    String?           @unique
+  dateOfBirth DateTime?         @db.Date
+  city        String?
+  bio         String?
+  avatarId    String?           @db.Uuid
+  visibility  ProfileVisibility @default(PUBLIC)
+  completedAt DateTime?         @db.Timestamptz(3)
+  version     Int               @default(1)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+}
+
+model PrivacyPolicy {
+  userId               String           @id @db.Uuid
+  postsAudience        Audience         @default(EVERYONE)
+  historyAudience      Audience         @default(EVERYONE)
+  statsAudience        Audience         @default(EVERYONE)
+  awardsAudience       Audience         @default(EVERYONE)
+  clubsAudience        Audience         @default(EVERYONE)
+  ratingsAudience      Audience         @default(EVERYONE)
+  cityAudience         Audience         @default(EVERYONE)
+  ageAudience          Audience         @default(ONLY_ME)
+  followListAudience   Audience         @default(FOLLOWERS)
+  messagePolicy        MessagePolicy    @default(FOLLOWING)
+  invitationPolicy     InvitationPolicy @default(EVERYONE)
+  mentionPolicy        MentionPolicy    @default(FOLLOWING)
+  reviewTags           Boolean          @default(true)
+  externalMediaSharing Boolean          @default(true)
+  updatedAt            DateTime         @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuthIdentity {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  userId       String       @db.Uuid
+  provider     AuthProvider
+  // email (lowercase) | phone (E.164) | provider subject
+  subject      String
+  passwordHash String?
+  verifiedAt   DateTime?    @db.Timestamptz(3)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+  @@index([userId])
+}
+
+model Session {
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  userId              String    @db.Uuid
+  refreshTokenHash    String    @unique
+  previousRefreshHash String?   @unique
+  deviceName          String?
+  userAgent           String?
+  createdAt           DateTime  @default(now()) @db.Timestamptz(3)
+  lastUsedAt          DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt           DateTime  @db.Timestamptz(3)
+  revokedAt           DateTime? @db.Timestamptz(3)
+  revokedReason       String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+model AccountRecoveryCase {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  contactProvider  AuthProvider
+  contactSubject   String
+  userId           String?        @db.Uuid
+  message          String?
+  status           RecoveryStatus @default(OPEN)
+  reviewedById     String?        @db.Uuid
+  verificationNote String?
+  tokenHash        String?        @unique
+  tokenExpiresAt   DateTime?      @db.Timestamptz(3)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  decidedAt        DateTime?      @db.Timestamptz(3)
+
+  @@index([status, createdAt])
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Follow {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  followerId  String           @db.Uuid
+  targetType  FollowTargetType
+  targetId    String           @db.Uuid
+  status      FollowStatus
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  respondedAt DateTime?        @db.Timestamptz(3)
+
+  @@unique([followerId, targetType, targetId])
+  @@index([targetType, targetId, status])
+}
+
+model Favourite {
+  id         String              @id @default(uuid(7)) @db.Uuid
+  userId     String              @db.Uuid
+  targetType FavouriteTargetType
+  targetId   String              @db.Uuid
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId, createdAt])
+}
+
+model SavedPost {
+  userId    String   @db.Uuid
+  postId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, postId])
+}
+
+// ───────────────────────── Authorization ─────────────────────────
+
+model RoleGrant {
+  id                String            @id @default(uuid(7)) @db.Uuid
+  granteeId         String            @db.Uuid
+  resourceType      GrantResourceType
+  // null only for PLATFORM grants
+  resourceId        String?           @db.Uuid
+  permission        String
+  canPassOn         Boolean           @default(false)
+  furtherDelegation Boolean           @default(false)
+  grantedById       String            @db.Uuid
+  sourceGrantId     String?           @db.Uuid
+  expiresAt         DateTime?         @db.Timestamptz(3)
+  revokedAt         DateTime?         @db.Timestamptz(3)
+  revokedById       String?           @db.Uuid
+  revokedReason     String?
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+
+  grantee User        @relation("GrantGrantee", fields: [granteeId], references: [id], onDelete: Cascade)
+  source  RoleGrant?  @relation("GrantChain", fields: [sourceGrantId], references: [id])
+  derived RoleGrant[] @relation("GrantChain")
+
+  @@index([granteeId, resourceType, resourceId])
+  @@index([sourceGrantId])
+  @@index([resourceType, resourceId])
+}
+
+model OwnershipTransfer {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  clubId      String         @db.Uuid
+  fromUserId  String         @db.Uuid
+  toUserId    String         @db.Uuid
+  status      TransferStatus @default(PENDING)
+  createdAt   DateTime       @default(now()) @db.Timestamptz(3)
+  respondedAt DateTime?      @db.Timestamptz(3)
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, status])
+  @@index([toUserId, status])
+}
+
+// ───────────────────────── Clubs ─────────────────────────
+
+model Club {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  name             String
+  username         String         @unique
+  city             String
+  about            String?
+  logoMediaId      String?        @db.Uuid
+  coverMediaId     String?        @db.Uuid
+  visibility       ClubVisibility @default(PUBLIC)
+  joinMode         ClubJoinMode   @default(APPROVE_REQUESTS)
+  preferredFormats String[]
+  founderId        String         @db.Uuid
+  ownerId          String         @db.Uuid
+  status           ClubStatus     @default(ACTIVE)
+  version          Int            @default(1)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+  archivedAt       DateTime?      @db.Timestamptz(3)
+
+  memberships Membership[]
+  transfers   OwnershipTransfer[]
+  events      Event[]
+  entries     ClubEntry[]
+
+  @@index([city])
+  @@index([ownerId])
+}
+
+model Membership {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  clubId      String           @db.Uuid
+  userId      String           @db.Uuid
+  status      MembershipStatus
+  // Display text only. Grants nothing.
+  roleTitle   String?
+  showTitle   Boolean          @default(true)
+  invitedById String?          @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  joinedAt    DateTime?        @db.Timestamptz(3)
+  leftAt      DateTime?        @db.Timestamptz(3)
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([userId, status])
+  @@index([clubId, status])
+}
+
+// ───────────────────────── Venues & bookings ─────────────────────────
+
+model Venue {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  name        String
+  nameLocal   String?
+  kind        VenueKind
+  status      VenueStatus @default(DRAFT)
+  city        String
+  district    String?
+  address     String?
+  latitude    Decimal?    @db.Decimal(9, 6)
+  longitude   Decimal?    @db.Decimal(9, 6)
+  // IANA timezone of the venue (bookings/hours are interpreted here)
+  timezone    String
+  about       String?
+  createdById String      @db.Uuid
+  publishedAt DateTime?   @db.Timestamptz(3)
+  version     Int         @default(1)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+
+  pitches Pitch[]
+  events  Event[]
+
+  @@index([city, status])
+}
+
+model Pitch {
+  id                String        @id @default(uuid(7)) @db.Uuid
+  venueId           String        @db.Uuid
+  name              String
+  surface           PitchSurface?
+  setting           PitchSetting?
+  lengthM           Decimal?      @db.Decimal(6, 2)
+  widthM            Decimal?      @db.Decimal(6, 2)
+  formats           String[]
+  amenities         String[]
+  pricePerHourMinor Int?
+  currency          String        @default("GEL")
+  status            VenueStatus   @default(DRAFT)
+  version           Int           @default(1)
+  createdAt         DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
+
+  venue          Venue                @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  parts          PitchPart[]
+  configurations PitchConfiguration[]
+  rules          BookingRules?
+  terms          BookingTerms[]
+  bookings       Booking[]
+  blocks         CalendarBlock[]
+  events         Event[]
+
+  @@index([venueId])
+}
+
+// Atomic physical unit of a pitch (a non-divisible pitch has exactly one part).
+model PitchPart {
+  id        String @id @default(uuid(7)) @db.Uuid
+  pitchId   String @db.Uuid
+  name      String
+  sortOrder Int    @default(0)
+
+  pitch          Pitch                    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  configurations PitchConfigurationPart[]
+  occupancies    PitchOccupancy[]
+
+  @@index([pitchId])
+}
+
+// Bookable combination of parts, e.g. "Whole pitch", "Half A". Manager-defined.
+model PitchConfiguration {
+  id      String  @id @default(uuid(7)) @db.Uuid
+  pitchId String  @db.Uuid
+  name    String
+  format  String?
+
+  pitch    Pitch                    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  parts    PitchConfigurationPart[]
+  bookings Booking[]
+
+  @@index([pitchId])
+}
+
+model PitchConfigurationPart {
+  configurationId String @db.Uuid
+  partId          String @db.Uuid
+
+  configuration PitchConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  part          PitchPart          @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@id([configurationId, partId])
+  @@index([partId])
+}
+
+model BookingRules {
+  pitchId                String   @id @db.Uuid
+  minDurationMinutes     Int      @default(60)
+  gridMinutes            Int      @default(30)
+  allowHalfHourExtension Boolean  @default(false)
+  // { "mon": [{"open":"09:00","close":"01:00"}], ... } interpreted in venue timezone; null = not configured
+  openingHours           Json?
+  ruleVersion            Int      @default(1)
+  updatedAt              DateTime @updatedAt @db.Timestamptz(3)
+
+  pitch Pitch @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+}
+
+model BookingTerms {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  pitchId   String   @db.Uuid
+  version   Int
+  body      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  pitch Pitch @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+
+  @@unique([pitchId, version])
+}
+
+model Booking {
+  id                 String              @id @default(uuid(7)) @db.Uuid
+  pitchId            String              @db.Uuid
+  configurationId    String              @db.Uuid
+  bookedById         String?             @db.Uuid
+  source             BookingSource       @default(LETSGO)
+  status             BookingStatus
+  startsAt           DateTime            @db.Timestamptz(3)
+  endsAt             DateTime            @db.Timestamptz(3)
+  holdExpiresAt      DateTime?           @db.Timestamptz(3)
+  externalName       String?
+  externalPhone      String?
+  staffNote          String?
+  priceMinor         Int?
+  currency           String              @default("GEL")
+  rulesVersion       Int
+  termsVersion       Int?
+  termsAcceptedAt    DateTime?           @db.Timestamptz(3)
+  confirmationSource ConfirmationSource?
+  confirmedById      String?             @db.Uuid
+  cancelReason       String?
+  version            Int                 @default(1)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
+
+  pitch         Pitch              @relation(fields: [pitchId], references: [id])
+  configuration PitchConfiguration @relation(fields: [configurationId], references: [id])
+  occupancies   PitchOccupancy[]
+  events        Event[]
+
+  @@index([pitchId, startsAt])
+  @@index([bookedById, startsAt])
+  @@index([status, holdExpiresAt])
+  @@index([configurationId])
+}
+
+model CalendarBlock {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  pitchId     String    @db.Uuid
+  startsAt    DateTime  @db.Timestamptz(3)
+  endsAt      DateTime  @db.Timestamptz(3)
+  reason      String?
+  createdById String    @db.Uuid
+  cancelledAt DateTime? @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+
+  pitch       Pitch            @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  occupancies PitchOccupancy[]
+
+  @@index([pitchId, startsAt])
+}
+
+// Physical-time occupancy of an atomic pitch part. Overlap is forbidden by an
+// EXCLUDE USING gist constraint (invariants migration) while releasedAt IS NULL.
+model PitchOccupancy {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  partId          String    @db.Uuid
+  bookingId       String?   @db.Uuid
+  calendarBlockId String?   @db.Uuid
+  startsAt        DateTime  @db.Timestamptz(3)
+  endsAt          DateTime  @db.Timestamptz(3)
+  releasedAt      DateTime? @db.Timestamptz(3)
+
+  part    PitchPart      @relation(fields: [partId], references: [id])
+  booking Booking?       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  block   CalendarBlock? @relation(fields: [calendarBlockId], references: [id], onDelete: Cascade)
+
+  @@index([partId, startsAt])
+  @@index([bookingId])
+  @@index([calendarBlockId])
+}
+
+model VenueRequest {
+  id               String             @id @default(uuid(7)) @db.Uuid
+  requestedById    String             @db.Uuid
+  name             String
+  city             String
+  latitude         Decimal?           @db.Decimal(9, 6)
+  longitude        Decimal?           @db.Decimal(9, 6)
+  address          String?
+  comment          String?
+  photoMediaIds    String[]
+  status           VenueRequestStatus @default(PENDING)
+  staffNote        String?
+  reviewedById     String?            @db.Uuid
+  reviewedAt       DateTime?          @db.Timestamptz(3)
+  resultingVenueId String?            @db.Uuid
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
+
+  @@index([status, createdAt])
+  @@index([requestedById])
+}
+
+// ───────────────────────── Events (games) ─────────────────────────
+
+model Event {
+  id                   String              @id @default(uuid(7)) @db.Uuid
+  kind                 EventKind
+  status               EventStatus         @default(DRAFT)
+  organiserId          String              @db.Uuid
+  clubId               String?             @db.Uuid
+  venueId              String?             @db.Uuid
+  pitchId              String?             @db.Uuid
+  bookingId            String?             @db.Uuid
+  title                String?
+  timezone             String
+  startsAt             DateTime            @db.Timestamptz(3)
+  endsAt               DateTime            @db.Timestamptz(3)
+  // players on the pitch per team (5 for 5v5)
+  formatPlayers        Int
+  teamCount            Int                 @default(2)
+  substitutesPerTeam   Int                 @default(0)
+  // teamCount * (formatPlayers + substitutesPerTeam); stored for indexing/locking simplicity
+  capacity             Int
+  minConfirmed         Int?
+  priceMinor           Int                 @default(0)
+  currency             String              @default("GEL")
+  pitchStatus          PitchStatus?
+  pitchStatusSource    ConfirmationSource?
+  joinMode             EventJoinMode       @default(APPROVE_REQUESTS)
+  ageBand              AgeBand             @default(NONE)
+  allowYounger         Boolean             @default(false)
+  refereeIncluded      Boolean             @default(false)
+  videoIncluded        Boolean             @default(false)
+  waterIncluded        Boolean             @default(false)
+  bibsIncluded         Boolean             @default(false)
+  refereeUserId        String?             @db.Uuid
+  waitlistEnabled      Boolean             @default(true)
+  payCashEnabled       Boolean             @default(true)
+  notes                String?
+  autoCancelEnabled    Boolean             @default(false)
+  autoCancelCheckAt    DateTime?           @db.Timestamptz(3)
+  // Priority-deadline follow-up: offer freed places to the remaining club players (Handoff §3).
+  autoNextWave         Boolean             @default(true)
+  // Linked booking was cancelled/rejected/expired: the game stays, the venue must be fixed (AC-40).
+  venueNeedsAttention  Boolean             @default(false)
+  venueAttentionReason String?
+  venueAttentionAt     DateTime?           @db.Timestamptz(3)
+  publishedAt          DateTime?           @db.Timestamptz(3)
+  cancelledAt          DateTime?           @db.Timestamptz(3)
+  cancelReason         String?
+  version              Int                 @default(1)
+  createdAt            DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime            @updatedAt @db.Timestamptz(3)
+
+  club    Club?    @relation(fields: [clubId], references: [id])
+  venue   Venue?   @relation(fields: [venueId], references: [id])
+  pitch   Pitch?   @relation(fields: [pitchId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  teams          EventTeam[]
+  participations Participation[]
+  invitations    Invitation[]
+  holds          SeatHold[]
+  offers         WaitlistOffer[]
+  matches        Match[]
+  obligations    PaymentObligation[]
+
+  @@index([status, startsAt])
+  @@index([organiserId, startsAt])
+  @@index([clubId, startsAt])
+  @@index([pitchId, startsAt])
+  @@index([bookingId])
+  @@index([venueId])
+}
+
+model EventTeam {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  eventId   String  @db.Uuid
+  index     Int
+  name      String?
+  colour    String?
+  captainId String? @db.Uuid
+  // club-v-club: the club fielding this team
+  clubId    String? @db.Uuid
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, index])
+}
+
+model Participation {
+  id                       String              @id @default(uuid(7)) @db.Uuid
+  eventId                  String              @db.Uuid
+  userId                   String              @db.Uuid
+  teamId                   String?             @db.Uuid
+  status                   ParticipationStatus
+  isSubstitute             Boolean             @default(false)
+  isGuest                  Boolean             @default(false)
+  source                   ParticipationSource
+  ageExceptionRequested    Boolean             @default(false)
+  ageExceptionApprovedById String?             @db.Uuid
+  waitlistedAt             DateTime?           @db.Timestamptz(3)
+  confirmedAt              DateTime?           @db.Timestamptz(3)
+  createdAt                DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime            @updatedAt @db.Timestamptz(3)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // One row per person per event: a person can never hold two places in one event.
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@index([userId, status])
+}
+
+model Invitation {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  eventId     String           @db.Uuid
+  inviteeId   String           @db.Uuid
+  invitedById String           @db.Uuid
+  status      InvitationStatus @default(PENDING)
+  priority    Boolean          @default(false)
+  isGuest     Boolean          @default(false)
+  waveNumber  Int              @default(1)
+  respondBy   DateTime?        @db.Timestamptz(3)
+  respondedAt DateTime?        @db.Timestamptz(3)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+
+  event Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  hold  SeatHold?
+
+  @@unique([eventId, inviteeId])
+  @@index([inviteeId, status, respondBy])
+  @@index([eventId, status])
+}
+
+model SeatHold {
+  id            String                 @id @default(uuid(7)) @db.Uuid
+  eventId       String                 @db.Uuid
+  invitationId  String                 @unique @db.Uuid
+  userId        String                 @db.Uuid
+  teamId        String?                @db.Uuid
+  expiresAt     DateTime               @db.Timestamptz(3)
+  releasedAt    DateTime?              @db.Timestamptz(3)
+  releaseReason SeatHoldReleaseReason?
+  createdAt     DateTime               @default(now()) @db.Timestamptz(3)
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, releasedAt, expiresAt])
+}
+
+model WaitlistOffer {
+  id              String              @id @default(uuid(7)) @db.Uuid
+  eventId         String              @db.Uuid
+  participationId String              @db.Uuid
+  userId          String              @db.Uuid
+  status          WaitlistOfferStatus @default(OFFERED)
+  offeredAt       DateTime            @default(now()) @db.Timestamptz(3)
+  expiresAt       DateTime            @db.Timestamptz(3)
+  respondedAt     DateTime?           @db.Timestamptz(3)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status, expiresAt])
+  @@index([userId, status])
+}
+
+model Match {
+  id                String      @id @default(uuid(7)) @db.Uuid
+  eventId           String      @db.Uuid
+  fixtureId         String?     @unique @db.Uuid
+  homeTeamId        String?     @db.Uuid
+  awayTeamId        String?     @db.Uuid
+  homeScore         Int?
+  awayScore         Int?
+  status            MatchStatus @default(DRAFT)
+  version           Int         @default(1)
+  startsAt          DateTime?   @db.Timestamptz(3)
+  confirmedById     String?     @db.Uuid
+  confirmedAt       DateTime?   @db.Timestamptz(3)
+  mvpVotingClosesAt DateTime?   @db.Timestamptz(3)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(3)
+
+  event     Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  events    MatchEvent[]
+  revisions MatchRevision[]
+  votes     MvpVote[]
+
+  @@index([eventId])
+}
+
+model MatchEvent {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  matchId      String         @db.Uuid
+  type         MatchEventType
+  teamId       String?        @db.Uuid
+  playerId     String         @db.Uuid
+  assistById   String?        @db.Uuid
+  minute       Int?
+  recordedById String         @db.Uuid
+  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([playerId])
+}
+
+model MatchRevision {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  matchId     String   @db.Uuid
+  version     Int
+  snapshot    Json
+  reason      String
+  changedById String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, version])
+}
+
+model MvpVote {
+  matchId     String   @db.Uuid
+  voterId     String   @db.Uuid
+  candidateId String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@id([matchId, voterId])
+}
+
+// ───────────────────────── Payments (cash only) ─────────────────────────
+
+model PaymentObligation {
+  id                 String           @id @default(uuid(7)) @db.Uuid
+  kind               ObligationKind
+  payerUserId        String?          @db.Uuid
+  payerClubId        String?          @db.Uuid
+  eventId            String?          @db.Uuid
+  tournamentId       String?          @db.Uuid
+  bookingId          String?          @db.Uuid
+  amountMinor        Int
+  currency           String           @default("GEL")
+  status             ObligationStatus @default(OPEN)
+  // Denormalised, maintained transactionally from the immutable ledger
+  paidMinor          Int              @default(0)
+  refundDueMinor     Int              @default(0)
+  refundedMinor      Int              @default(0)
+  // Payer expressed intent to pay in cash (does NOT mean paid)
+  payCashRequestedAt DateTime?        @db.Timestamptz(3)
+  version            Int              @default(1)
+  createdAt          DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
+
+  event       Event?        @relation(fields: [eventId], references: [id])
+  receipts    CashReceipt[]
+  adjustments Adjustment[]
+
+  @@unique([kind, eventId, payerUserId])
+  @@unique([kind, tournamentId, payerClubId])
+  @@index([payerUserId, status])
+  @@index([eventId, status])
+  @@index([tournamentId, status])
+}
+
+// Immutable (trigger). Corrections go through Adjustment.
+model CashReceipt {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  obligationId   String   @db.Uuid
+  amountMinor    Int
+  currency       String
+  receivedById   String   @db.Uuid
+  receivedAt     DateTime @default(now()) @db.Timestamptz(3)
+  note           String?
+  idempotencyKey String?
+
+  obligation PaymentObligation @relation(fields: [obligationId], references: [id])
+
+  @@index([obligationId])
+}
+
+// Immutable (trigger).
+model Adjustment {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  obligationId String         @db.Uuid
+  type         AdjustmentType
+  // signed minor units. CORRECTION: change of effective paid amount; REFUND_*: positive amounts
+  deltaMinor   Int
+  reason       String
+  actorId      String         @db.Uuid
+  receiptId    String?        @db.Uuid
+  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
+
+  obligation PaymentObligation @relation(fields: [obligationId], references: [id])
+
+  @@index([obligationId])
+}
+
+// ───────────────────────── Tournaments ─────────────────────────
+
+model Tournament {
+  id                String             @id @default(uuid(7)) @db.Uuid
+  name              String
+  description       String?
+  logoMediaId       String?            @db.Uuid
+  organiserId       String             @db.Uuid
+  city              String
+  timezone          String
+  duration          TournamentDuration
+  startsOn          DateTime           @db.Date
+  endsOn            DateTime?          @db.Date
+  formatPlayers     Int
+  ageBand           AgeBand            @default(NONE)
+  allowYounger      Boolean            @default(false)
+  feeMode           FeeMode            @default(FREE)
+  feeMinor          Int                @default(0)
+  currency          String             @default("GEL")
+  status            TournamentStatus   @default(DRAFT)
+  waitlistOpen      Boolean            @default(false)
+  isPublic          Boolean            @default(true)
+  maxClubs          Int?
+  minClubs          Int?
+  minPlayersPerClub Int?
+  maxPlayersPerClub Int?
+  mainSponsorId     String?            @db.Uuid
+  publishedAt       DateTime?          @db.Timestamptz(3)
+  version           Int                @default(1)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+
+  entries   ClubEntry[]
+  stages    TournamentStage[]
+  fixtures  Fixture[]
+  documents RuleDocument[]
+  sponsors  Sponsor[]
+
+  @@index([status, startsOn])
+  @@index([organiserId])
+}
+
+model ClubEntry {
+  id            String      @id @default(uuid(7)) @db.Uuid
+  tournamentId  String      @db.Uuid
+  clubId        String      @db.Uuid
+  status        EntryStatus
+  submittedById String      @db.Uuid
+  decidedById   String?     @db.Uuid
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  decidedAt     DateTime?   @db.Timestamptz(3)
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  club       Club              @relation(fields: [clubId], references: [id])
+  players    ClubEntryPlayer[]
+
+  @@unique([tournamentId, clubId])
+  @@index([tournamentId, status])
+  @@index([clubId])
+}
+
+model ClubEntryPlayer {
+  id                       String            @id @default(uuid(7)) @db.Uuid
+  entryId                  String            @db.Uuid
+  tournamentId             String            @db.Uuid
+  userId                   String            @db.Uuid
+  status                   EntryPlayerStatus @default(INVITED)
+  isGuest                  Boolean           @default(false)
+  ageExceptionApprovedById String?           @db.Uuid
+  createdAt                DateTime          @default(now()) @db.Timestamptz(3)
+
+  entry ClubEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  // One person cannot be in two squads of one tournament
+  @@unique([tournamentId, userId])
+  @@index([entryId])
+}
+
+model TournamentStage {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  tournamentId String    @db.Uuid
+  index        Int
+  name         String
+  kind         StageKind
+  config       Json
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  fixtures   Fixture[]
+  standings  Standing[]
+
+  @@unique([tournamentId, index])
+}
+
+model Fixture {
+  id              String        @id @default(uuid(7)) @db.Uuid
+  tournamentId    String        @db.Uuid
+  stageId         String        @db.Uuid
+  round           Int           @default(1)
+  groupLabel      String?
+  homeEntryId     String?       @db.Uuid
+  awayEntryId     String?       @db.Uuid
+  homePlaceholder String?
+  awayPlaceholder String?
+  pitchId         String?       @db.Uuid
+  startsAt        DateTime?     @db.Timestamptz(3)
+  endsAt          DateTime?     @db.Timestamptz(3)
+  scheduleVersion Int           @default(1)
+  status          FixtureStatus @default(SCHEDULED)
+  homeScore       Int?
+  awayScore       Int?
+
+  tournament Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stage      TournamentStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId, startsAt])
+  @@index([stageId, round])
+}
+
+model Standing {
+  id           String @id @default(uuid(7)) @db.Uuid
+  stageId      String @db.Uuid
+  groupLabel   String @default("")
+  entryId      String @db.Uuid
+  played       Int    @default(0)
+  won          Int    @default(0)
+  drawn        Int    @default(0)
+  lost         Int    @default(0)
+  goalsFor     Int    @default(0)
+  goalsAgainst Int    @default(0)
+  points       Int    @default(0)
+  rank         Int    @default(0)
+
+  stage TournamentStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([stageId, groupLabel, entryId])
+}
+
+model RuleDocument {
+  id               String           @id @default(uuid(7)) @db.Uuid
+  tournamentId     String           @db.Uuid
+  title            String
+  audience         DocumentAudience
+  mandatory        Boolean          @default(true)
+  language         String?
+  currentVersionId String?          @db.Uuid
+  createdById      String           @db.Uuid
+  createdAt        DateTime         @default(now()) @db.Timestamptz(3)
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  versions   DocumentVersion[]
+
+  @@index([tournamentId])
+}
+
+model DocumentVersion {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  documentId  String   @db.Uuid
+  version     Int
+  fileMediaId String   @db.Uuid
+  checksum    String?
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  document RuleDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  consents Consent[]
+
+  @@unique([documentId, version])
+}
+
+// Immutable (trigger): history of who accepted which version, when.
+model Consent {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  versionId  String      @db.Uuid
+  userId     String      @db.Uuid
+  role       ConsentRole
+  acceptedAt DateTime    @default(now()) @db.Timestamptz(3)
+
+  version DocumentVersion @relation(fields: [versionId], references: [id])
+
+  @@unique([versionId, userId])
+  @@index([userId])
+}
+
+model Sponsor {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  tournamentId String    @db.Uuid
+  name         String
+  logoMediaId  String?   @db.Uuid
+  externalUrl  String?
+  sortOrder    Int       @default(0)
+  hiddenAt     DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+
+  tournament Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  assets     SponsorAsset[]
+
+  @@index([tournamentId])
+}
+
+model SponsorAsset {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  sponsorId String    @db.Uuid
+  mediaId   String    @db.Uuid
+  sortOrder Int       @default(0)
+  hiddenAt  DateTime? @db.Timestamptz(3)
+
+  sponsor Sponsor @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+
+  @@index([sponsorId])
+}
+
+// ───────────────────────── Content ─────────────────────────
+
+model MediaAsset {
+  id               String          @id @default(uuid(7)) @db.Uuid
+  ownerId          String          @db.Uuid
+  kind             MediaKind
+  status           MediaStatus     @default(UPLOADING)
+  visibility       MediaVisibility @default(PRIVATE)
+  mimeType         String
+  sizeBytes        BigInt
+  storageKey       String          @unique
+  checksum         String?
+  width            Int?
+  height           Int?
+  durationSeconds  Int?
+  failureReason    String?
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  readyAt          DateTime?       @db.Timestamptz(3)
+  // true once EXIF/GPS metadata was removed by re-encoding (photos)
+  metadataStripped Boolean         @default(false)
+  variants         MediaVariant[]
+
+  posts PostMedia[]
+
+  @@index([ownerId, createdAt])
+}
+
+model Post {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  // actual editor (audit); authorType/authorEntityId is "posting as"
+  authorId       String         @db.Uuid
+  authorType     PostAuthorType @default(USER)
+  authorEntityId String         @db.Uuid
+  audience       PostAudience   @default(PUBLIC)
+  body           String?
+  achievementId  String?        @db.Uuid
+  eventId        String?        @db.Uuid
+  status         PostStatus     @default(DRAFT)
+  commentsClosed Boolean        @default(false)
+  version        Int            @default(1)
+  publishedAt    DateTime?      @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
+  deletedAt      DateTime?      @db.Timestamptz(3)
+
+  media     PostMedia[]
+  comments  Comment[]
+  reactions Reaction[]
+  mentions  Mention[]
+
+  @@index([status, publishedAt, id])
+  @@index([authorType, authorEntityId, publishedAt])
+  @@index([authorId])
+}
+
+model PostMedia {
+  postId   String @db.Uuid
+  mediaId  String @db.Uuid
+  position Int
+
+  post  Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@id([postId, mediaId])
+  @@index([mediaId])
+}
+
+model Comment {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  postId      String    @db.Uuid
+  authorId    String    @db.Uuid
+  parentId    String?   @db.Uuid
+  body        String
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  editedAt    DateTime? @db.Timestamptz(3)
+  deletedAt   DateTime? @db.Timestamptz(3)
+  deletedById String?   @db.Uuid
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt, id])
+}
+
+model Reaction {
+  postId    String   @db.Uuid
+  userId    String   @db.Uuid
+  type      String   @default("LIKE")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId, type])
+}
+
+// Mention doubles as the "tag request" the mentioned subject reviews.
+model Mention {
+  id          String            @id @default(uuid(7)) @db.Uuid
+  postId      String            @db.Uuid
+  targetType  MentionTargetType
+  targetId    String            @db.Uuid
+  createdById String            @db.Uuid
+  status      MentionStatus     @default(SHOWN)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  decidedAt   DateTime?         @db.Timestamptz(3)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, targetType, targetId])
+  @@index([targetType, targetId, status])
+}
+
+// ───────────────────────── Comms ─────────────────────────
+
+model Conversation {
+  id           String           @id @default(uuid(7)) @db.Uuid
+  kind         ConversationKind
+  eventId      String?          @db.Uuid
+  clubId       String?          @db.Uuid
+  tournamentId String?          @db.Uuid
+  // DIRECT only: "<smallerUserId>:<largerUserId>"
+  directKey    String?          @unique
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([eventId])
+  @@index([clubId])
+  @@index([tournamentId])
+}
+
+model ConversationMember {
+  conversationId String    @db.Uuid
+  userId         String    @db.Uuid
+  isStaff        Boolean   @default(false)
+  joinedAt       DateTime  @default(now()) @db.Timestamptz(3)
+  leftAt         DateTime? @db.Timestamptz(3)
+  lastReadAt     DateTime? @db.Timestamptz(3)
+  muted          Boolean   @default(false)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String      @id @default(uuid(7)) @db.Uuid
+  conversationId String      @db.Uuid
+  senderId       String?     @db.Uuid
+  kind           MessageKind @default(TEXT)
+  body           String?
+  cardType       String?
+  cardPayload    Json?
+  createdAt      DateTime    @default(now()) @db.Timestamptz(3)
+  editedAt       DateTime?   @db.Timestamptz(3)
+  deletedAt      DateTime?   @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, id])
+}
+
+model ActivityItem {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  recipientId String    @db.Uuid
+  kind        String
+  actorId     String?   @db.Uuid
+  objectType  String
+  objectId    String    @db.Uuid
+  // Only non-sensitive display data; never private post/event content the recipient cannot see.
+  payload     Json?
+  dedupeKey   String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  readAt      DateTime? @db.Timestamptz(3)
+
+  @@unique([recipientId, dedupeKey])
+  @@index([recipientId, createdAt, id])
+}
+
+model Notification {
+  id            String               @id @default(uuid(7)) @db.Uuid
+  recipientId   String               @db.Uuid
+  category      String
+  title         String
+  body          String?
+  objectType    String?
+  objectId      String?              @db.Uuid
+  dedupeKey     String?
+  delivery      NotificationDelivery @default(PENDING)
+  attempts      Int                  @default(0)
+  nextAttemptAt DateTime?            @db.Timestamptz(3)
+  lastError     String?
+  deliveredAt   DateTime?            @db.Timestamptz(3)
+  readAt        DateTime?            @db.Timestamptz(3)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(3)
+
+  @@unique([recipientId, dedupeKey])
+  @@index([recipientId, createdAt, id])
+  @@index([delivery, createdAt])
+}
+
+model NotificationPreference {
+  userId   String  @db.Uuid
+  category String
+  inApp    Boolean @default(true)
+  push     Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, category])
+}
+
+// ───────────────────────── Trust & safety ─────────────────────────
+
+model Rating {
+  id            String        @id @default(uuid(7)) @db.Uuid
+  authorId      String        @db.Uuid
+  subjectType   RatingSubject
+  subjectId     String        @db.Uuid
+  eventId       String        @db.Uuid
+  score         Int
+  comment       String?
+  extended      Json?
+  editableUntil DateTime      @db.Timestamptz(3)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  hiddenAt      DateTime?     @db.Timestamptz(3)
+
+  @@unique([authorId, subjectType, subjectId, eventId])
+  @@index([subjectType, subjectId])
+}
+
+model Achievement {
+  id                 String          @id @default(uuid(7)) @db.Uuid
+  type               AchievementType
+  recipientId        String          @db.Uuid
+  clubId             String?         @db.Uuid
+  title              String
+  description        String?
+  grantedById        String?         @db.Uuid
+  sourceMatchId      String?         @db.Uuid
+  sourceTournamentId String?         @db.Uuid
+  awardedAt          DateTime        @default(now()) @db.Timestamptz(3)
+  revokedAt          DateTime?       @db.Timestamptz(3)
+
+  @@index([recipientId, awardedAt])
+  @@index([clubId])
+}
+
+model Report {
+  id           String           @id @default(uuid(7)) @db.Uuid
+  ticketNumber Int              @unique @default(autoincrement())
+  reporterId   String           @db.Uuid
+  targetType   ReportTargetType
+  targetId     String           @db.Uuid
+  reason       ReportReason
+  text         String?
+  status       ReportStatus     @default(OPEN)
+  resolvedById String?          @db.Uuid
+  resolution   String?
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+  resolvedAt   DateTime?        @db.Timestamptz(3)
+
+  actions ModerationAction[]
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+model ModerationAction {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  reportId    String?          @db.Uuid
+  moderatorId String           @db.Uuid
+  action      String
+  targetType  ReportTargetType
+  targetId    String           @db.Uuid
+  reason      String
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+
+  report Report? @relation(fields: [reportId], references: [id])
+
+  @@index([targetType, targetId])
+  @@index([reportId])
+}
+
+// Immutable (trigger).
+model AuditEvent {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  targetType String
+  targetId   String?
+  metadata   Json?
+  requestId  String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([targetType, targetId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  userId         String   @db.Uuid
+  scope          String
+  key            String
+  requestHash    String
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt      DateTime @db.Timestamptz(3)
+
+  @@unique([userId, scope, key])
+  @@index([expiresAt])
+}
+
+// ───────────────────────── Finalization-stage additions ─────────────────────────
+
+enum FeeAmendmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  SUPERSEDED
+  CANCELLED
+}
+
+// A proposed change of what one participant owes. The obligation changes ONLY on acceptance;
+// receipts are never touched. At most one PENDING amendment per obligation (partial unique in SQL).
+model FeeAmendment {
+  id             String             @id @default(uuid(7)) @db.Uuid
+  eventId        String             @db.Uuid
+  obligationId   String             @db.Uuid
+  participantId  String             @db.Uuid
+  oldAmountMinor Int
+  newAmountMinor Int
+  currency       String
+  reason         String?
+  status         FeeAmendmentStatus @default(PENDING)
+  proposedById   String             @db.Uuid
+  respondedById  String?            @db.Uuid
+  respondedAt    DateTime?          @db.Timestamptz(3)
+  version        Int                @default(1)
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
+
+  @@index([obligationId, status])
+  @@index([participantId, status, createdAt])
+  @@index([eventId, status])
+}
+
+// Persistent record of scheduled maintenance executions (restart-safe, visible to every instance).
+model JobRun {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  job        String
+  startedAt  DateTime  @default(now()) @db.Timestamptz(3)
+  finishedAt DateTime? @db.Timestamptz(3)
+  status     String    @default("RUNNING")
+  report     Json?
+  error      String?
+
+  @@index([job, startedAt])
+}
+
+// Per-user recent searches. Stores only the query text or an entity reference — never a copy of the
+// result. Access to a referenced entity is re-evaluated every time the list is resolved.
+model RecentSearch {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  userId     String   @db.Uuid
+  // "q:<lowercased query>" | "e:<TYPE>:<uuid>"
+  dedupeKey  String
+  query      String?
+  entityType String?
+  entityId   String?  @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  lastUsedAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, lastUsedAt])
+}
+
+// Provider-neutral image variants (thumbnails) produced after metadata stripping.
+model MediaVariant {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  assetId    String   @db.Uuid
+  label      String
+  storageKey String   @unique
+  mimeType   String
+  width      Int
+  height     Int
+  sizeBytes  Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, label])
+}
+
+// Server-issued single-use nonce for Google/Apple sign-in (replay protection).
+model AuthNonce {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  nonceHash String    @unique
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+
+  @@index([expiresAt])
+}
+
+// Physical rental windows a tournament schedules its fixtures into.
+model TournamentBooking {
+  tournamentId String   @db.Uuid
+  bookingId    String   @db.Uuid
+  attachedById String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([tournamentId, bookingId])
+  @@unique([bookingId])
+}
+
+enum WithdrawalStatus {
+  PENDING_RESOLUTION
+  RESOLVED
+}
+
+enum WithdrawalResolution {
+  POSTPONE
+  TECHNICAL_RESULT
+  REPLACEMENT
+  END_PARTICIPATION
+}
+
+// A club leaving after the tournament started: recorded, then resolved EXPLICITLY by the organiser
+// according to the published regulations. Played results are never deleted.
+model EntryWithdrawal {
+  id                 String                @id @default(uuid(7)) @db.Uuid
+  tournamentId       String                @db.Uuid
+  entryId            String                @db.Uuid
+  requestedById      String                @db.Uuid
+  reason             String
+  status             WithdrawalStatus      @default(PENDING_RESOLUTION)
+  resolution         WithdrawalResolution?
+  resolutionNote     String?
+  resolvedById       String?               @db.Uuid
+  resolvedAt         DateTime?             @db.Timestamptz(3)
+  replacementEntryId String?               @db.Uuid
+  details            Json?
+  createdAt          DateTime              @default(now()) @db.Timestamptz(3)
+
+  @@index([tournamentId, status])
+  @@index([entryId])
+}

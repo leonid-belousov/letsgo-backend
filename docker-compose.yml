@@ -1,0 +1,20 @@
+# Local development database only. Credentials are dev placeholders.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: letsgo_postgres
+    environment:
+      POSTGRES_USER: letsgo
+      POSTGRES_PASSWORD: letsgo_local_password
+      POSTGRES_DB: letsgo
+    ports:
+      - '5432:5432'
+    volumes:
+      - letsgo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U letsgo -d letsgo']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  letsgo_pgdata:
