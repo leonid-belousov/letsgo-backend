@@ -3,6 +3,8 @@
 Instructions for any coding agent or sub-agent working in `lets_go_back`. Also read `CLAUDE.md`.
 
 ## Allowed scope
+
+Standalone layout: references to `lets_go_back/**` denote this repository root. Shared workspace Markdown documents are in `docs/project`; client source belongs to the separate linked repositories.
 Only `lets_go_back/**` plus root documentation files explicitly named in the task. Do not touch `lets_go_front` / `lets_go_mobile` code. Do not re-initialize NestJS/Prisma/Docker; extend what exists.
 
 ## Authoritative documents

@@ -1,5 +1,9 @@
 # lets_go_back
 
+Standalone backend repository. Related clients: [web](https://github.com/leonid-belousov/letsgo-frontend) and [mobile](https://github.com/leonid-belousov/letsgo-mobile).
+
+Shared product documents and backend reports are included in [docs/project](docs/project). Historical plans retain paths from the original combined workspace; `lets_go_back/` denotes this repository root.
+
 ## 1. Purpose
 
 Let'sGo backend API — the **source of truth for business state and permissions**. `lets_go_front` (web) and `lets_go_mobile` (Expo) are clients only; neither may infer authorization from visible buttons. All API routes live under `/v1`; `/health`, `/health/ready` and `/docs` are unprefixed.
@@ -71,7 +75,7 @@ npm run test:migrations       # rebuilds the schema FROM ZERO in a throw-away da
 
 ## 10. Architecture notes
 
-See `CLAUDE.md` / `AGENTS.md` (rules) and `../BACKEND_IMPLEMENTATION_REPORT.md` (what exists). Highlights:
+See `CLAUDE.md` / `AGENTS.md` (rules) and [BACKEND_IMPLEMENTATION_REPORT.md](docs/project/BACKEND_IMPLEMENTATION_REPORT.md) (what exists). Highlights:
 
 - **Authorization**: `PolicyService` (structural authority + `RoleGrant` with scope, expiry, source grant, can-pass-on). Role titles grant nothing. Capabilities in responses come from the same calls that guard mutations.
 - **Idempotency**: `Idempotency-Key` header; key row committed in the same transaction as the work (survives restarts; same key + different payload → `IDEMPOTENCY_CONFLICT`). Mandatory for Cash received and adjustments.
